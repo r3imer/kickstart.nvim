@@ -160,6 +160,11 @@ vim.opt.cursorline = true
 -- Minimal number of screen lines to keep above and below the cursor.
 vim.opt.scrolloff = 10
 
+vim.o.foldmethod = 'expr'
+vim.opt.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.opt.foldtext = ''
+vim.o.fillchars = 'fold: '
+
 -- [[ Basic Keymaps ]]
 --  See `:help vim.keymap.set()`
 
@@ -192,6 +197,11 @@ vim.keymap.set('n', '<C-h>', '<C-w><C-h>', { desc = 'Move focus to the left wind
 vim.keymap.set('n', '<C-l>', '<C-w><C-l>', { desc = 'Move focus to the right window' })
 vim.keymap.set('n', '<C-j>', '<C-w><C-j>', { desc = 'Move focus to the lower window' })
 vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper window' })
+
+vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = '<C-d>zz' })
+vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = '<C-u>zz' })
+vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move line down' })
+vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move line up' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -889,6 +899,8 @@ require('lazy').setup({
 
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
+      -- vim.cmd.hi 'Folded guibg=NONE'
+      -- vim.cmd.hi 'link Folded Normal'
     end,
   },
 
