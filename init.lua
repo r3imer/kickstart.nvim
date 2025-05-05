@@ -449,6 +449,10 @@ require('lazy').setup({
         builtin.find_files { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
 
+      vim.keymap.set('n', '<leader>s~', function()
+        builtin.find_files { cwd = '~' }
+      end, { desc = '[S]earch [~] home' })
+
       vim.keymap.set('n', '<leader>.', function()
         local dir = vim.fn.expand '%:p:h'
         vim.fn.jobstart { 'wezterm', 'cli', 'split-pane', '--bottom', '--cwd', dir }
