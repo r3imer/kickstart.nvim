@@ -174,6 +174,7 @@ vim.keymap.set('n', '<Esc>', '<cmd>nohlsearch<CR>')
 
 -- Diagnostic keymaps
 vim.keymap.set('n', '<leader>q', vim.diagnostic.setloclist, { desc = 'Open diagnostic [Q]uickfix list' })
+vim.keymap.set('n', '<leader>bc', ':%bd|e#|bd#<CR>', { desc = 'close all except [c]urrent' })
 
 -- Exit terminal mode in the builtin terminal with a shortcut that is a bit easier
 -- for people to discover. Otherwise, you normally need to press <C-\><C-n>, which
@@ -327,6 +328,7 @@ require('lazy').setup({
 
       -- Document existing key chains
       spec = {
+        { '<leader>b', group = '[B]uffers' },
         { '<leader>c', group = '[C]ode', mode = { 'n', 'x' } },
         { '<leader>d', group = '[D]ocument' },
         { '<leader>g', group = '[G]it' },
@@ -455,7 +457,7 @@ require('lazy').setup({
 
       vim.keymap.set('n', '<leader>.', function()
         local dir = vim.fn.expand '%:p:h'
-        vim.fn.jobstart { 'wezterm', 'cli', 'split-pane', '--bottom', '--cwd', dir }
+        vim.fn.jobstart({ 'wezterm', 'cli', 'split-pane', '--bottom', '--cwd', dir }, { detach = true })
       end, { desc = '[.] wezterm open current dir' })
     end,
   },
@@ -478,6 +480,16 @@ require('lazy').setup({
     'tpope/vim-fugitive',
     config = function()
       vim.keymap.set('n', '<leader>gs', vim.cmd.Git, { desc = '[G]it [S]tatus' })
+
+      vim.keymap.set('n', '<leader>gd', function()
+        local commit = vim.fn.expand '<cword>'
+        vim.fn.jobstart({ 'wezterm', 'cli', 'split-pane', '--bottom', '--', 'git', 'diff', commit .. '^!' }, { detach = true })
+      end, { desc = '[G]it [D]iff' })
+
+      vim.keymap.set('n', '<leader>gw', function()
+        local commit = vim.fn.expand '<cword>'
+        vim.cmd('Git show ' .. commit)
+      end, { desc = '[G]it sho[W]' })
 
       local fugitive = vim.api.nvim_create_augroup('r3im_fugitive', {})
 
@@ -754,7 +766,7 @@ require('lazy').setup({
         -- Disable "format_on_save lsp_fallback" for languages that don't
         -- have a well standardized coding style. You can add additional
         -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
+        local disable_filetypes = { c = true, cpp = true, cs = true }
         local lsp_format_opt
         if disable_filetypes[vim.bo[bufnr].filetype] then
           lsp_format_opt = 'never'
