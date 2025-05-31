@@ -84,6 +84,9 @@ I hope you enjoy your Neovim journey,
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
 
+-- To ensure restore mode (and not update mode)
+vim.g.lazy_auto_sync = false
+
 vim.cmd 'language en_US'
 
 -- Set <space> as the leader key
