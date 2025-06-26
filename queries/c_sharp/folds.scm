@@ -1,1 +1,1 @@
-(function_definition) @fold
+(method_declaration body: (block) @fold)
