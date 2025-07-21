@@ -1,1 +1,1 @@
-vim.opt.colorcolumn = '80,120'
+vim.bo.commentstring = '// %s'
