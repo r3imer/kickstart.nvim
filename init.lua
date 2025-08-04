@@ -103,6 +103,7 @@ vim.g.have_nerd_font = true
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+vim.opt.foldopen = 'block,hor,insert,jump,mark,percent,quickfix,search,tag,undo'
 vim.opt.colorcolumn = '80'
 -- Make line numbers default
 vim.opt.number = true
@@ -116,19 +117,22 @@ vim.opt.mouse = ''
 -- Don't show the mode, since it's already in the status line
 vim.opt.showmode = false
 
--- Sync clipboard between OS and Neovim.
---  Schedule the setting after `UiEnter` because it can increase startup-time.
---  Remove this option if you want your OS clipboard to remain independent.
---  See `:help 'clipboard'`
-vim.schedule(function()
-  vim.opt.clipboard = 'unnamedplus'
-end)
+-- -- Sync clipboard between OS and Neovim.
+-- --  Schedule the setting after `UiEnter` because it can increase startup-time.
+-- --  Remove this option if you want your OS clipboard to remain independent.
+-- --  See `:help 'clipboard'`
+-- vim.schedule(function()
+--   vim.opt.clipboard = 'unnamedplus'
+-- end)
 
 -- Enable break indent
 vim.opt.breakindent = true
 
 -- Save undo history
 vim.opt.undofile = true
+
+vim.opt.swapfile = false
+vim.opt.backup = false
 
 -- Case-insensitive searching UNLESS \C or one or more capital letters in the search term
 vim.opt.ignorecase = true
@@ -204,8 +208,19 @@ vim.keymap.set('n', '<C-k>', '<C-w><C-k>', { desc = 'Move focus to the upper win
 
 vim.keymap.set('n', '<C-d>', '<C-d>zz', { desc = '<C-d>zz' })
 vim.keymap.set('n', '<C-u>', '<C-u>zz', { desc = '<C-u>zz' })
+vim.keymap.set('n', 'J', 'mzJ`z', { desc = 'mzJ`z' })
+vim.keymap.set('n', 'n', 'nzzzv', { desc = 'nzzzv' })
+vim.keymap.set('n', 'N', 'Nzzzv', { desc = 'Nzzzv' })
+
 vim.keymap.set('v', 'J', ":m '>+1<CR>gv=gv", { desc = 'Move line down' })
 vim.keymap.set('v', 'K', ":m '<-2<CR>gv=gv", { desc = 'Move line up' })
+
+vim.keymap.set({ 'n', 'v' }, '<leader>y', '"+y', { desc = '"+y' })
+vim.keymap.set('n', '<leader>Y', '"+Y', { desc = '"+Y' })
+
+vim.keymap.set('x', '<leader>p', '"_dP', { desc = '"_dP' }) -- see HELP.md
+vim.keymap.set('n', '<leader>d', '"_d', { desc = '"_d' })
+vim.keymap.set('n', '<leader>p', '"+p', { desc = '"+p' })
 
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
@@ -1062,5 +1077,53 @@ require('lazy').setup({
   },
 })
 
+function QuickfixDotnetErrors()
+  local qf = {}
+  for _, line in ipairs(vim.api.nvim_buf_get_lines(0, 0, -1, false)) do
+    local file, lnum, col, msg = line:match '^(.-)%((%d+),(%d+)%)%: (.+)$'
+    if file and lnum and col and msg then
+      table.insert(qf, {
+        filename = file,
+        lnum = tonumber(lnum),
+        col = tonumber(col),
+        text = msg,
+      })
+    end
+  end
+  vim.fn.setqflist(qf, 'r')
+  QuickfixSort()
+  vim.cmd 'copen'
+end
+
+function QuickfixSort()
+  local qf = vim.fn.getqflist()
+  local seen = {}
+  local list = {}
+
+  -- for i, v in ipairs(list) do
+  --   local name = vim.api.nvim_buf_get_name(v.bufnr)
+  --   vim.print { i, v, name }
+  -- end
+  for _, v in ipairs(qf) do
+    local key = table.concat({ v.bufnr, v.lnum, v.col, v.text }, '::')
+    if not seen[key] then
+      seen[key] = true
+      table.insert(list, v)
+    end
+  end
+
+  -- Sort: by filename, then line, then column
+  table.sort(list, function(a, b)
+    if a.bufnr ~= b.bufnr then
+      return a.bufnr < b.bufnr
+    elseif a.lnum ~= b.lnum then
+      return a.lnum < b.lnum
+    else
+      return a.col < b.col
+    end
+  end)
+
+  vim.fn.setqflist(list, 'r')
+end
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
